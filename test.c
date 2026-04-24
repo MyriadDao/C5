@@ -58,6 +58,63 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
 
     return OK;
 }
+// Вычитает v2 из v1 (только мантиссы). Возвращает 0 — ок.
+int base_sub(s21_decimal v1, s21_decimal v2, s21_decimal *res) {
+    int64_t borrow = 0;
+    for (int i = 0; i < 3; i++) {
+        int64_t sub = (int64_t)(uint32_t)v1.bits[i] - (uint32_t)v2.bits[i] - borrow;
+        if (sub < 0) {
+            sub += (int64_t)1 << 32;
+            borrow = 1;
+        } else {
+            borrow = 0;
+        }
+        res->bits[i] = (uint32_t)sub;
+    }
+    return borrow ? 1 : 0; // Если borrow остался, значит v2 было больше v1
+}
+// Вспомогательная функция сравнения мантисс (без учета знака и экспоненты)
+int compare_mantissa(s21_decimal v1, s21_decimal v2) {
+    for (int i = 2; i >= 0; i--) {
+        if ((uint32_t)v1.bits[i] > (uint32_t)v2.bits[i]) return 1;
+        if ((uint32_t)v1.bits[i] < (uint32_t)v2.bits[i]) return -1;
+    }
+    return 0;
+}
+
+int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+    if (!result) return OK;
+    memset(result, 0, sizeof(s21_decimal));
+
+    int sign1 = GET_SIGN(value_1);
+    int sign2 = GET_SIGN(value_2);
+    int exp1 = GET_EXP(value_1);
+    int exp2 = GET_EXP(value_2);
+
+    // Упрощение: предполагаем, что экспоненты уже равны (нужна нормализация)
+    
+    if (sign1 != sign2) {
+        // Если знаки разные: A - (-B) = A + B или -A - B = -(A + B)
+        // Временно меняем знак второй переменной и вызываем сложение
+        SET_SIGN((&value_2), !sign2);
+        return s21_add(value_1, value_2, result);
+    } else {
+        // Если знаки одинаковые: вычитаем мантиссы
+        int cmp = compare_mantissa(value_1, value_2);
+        if (cmp >= 0) {
+            base_sub(value_1, value_2, result);
+            SET_SIGN(result, sign1);
+        } else {
+            base_sub(value_2, value_1, result);
+            SET_SIGN(result, !sign1); // Результат меняет знак, если вычитаемое больше
+        }
+        SET_EXP(result, exp1);
+    }
+
+    return OK;
+}
+
+
 void print_decimal_raw(s21_decimal dec) {
     printf("Value: ");
     for (int i = 2; i >= 0; i--) {
@@ -109,7 +166,7 @@ int main()
 	s21_decimal dec2 = {0};
 	s21_decimal res;
 
-	int result = s21_add(dec1, dec2, &res);
+	int result = s21_sub(dec2, dec1, &res);
 
 	printf("Decimal: ");
 	print_decimal_raw(res);
