@@ -1,12 +1,24 @@
 #ifndef S21_DECIMAL
 #define S21_DECIMAL
 
-#include "s21_decimal_type.h"
+#include <stdio.h>
+#include <math.h>
+#include <limits.h>
+#include <stdlib.h>
 
-int add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
-int sub(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
-int mul(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
-int div(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
+#include "s21_decimal_type.h"
+#include "s21_utils.h"
+
+#define ONE_DEC ((s21_decimal){{1, 0, 0, 0}})
+#define ZERO_DEC ((s21_decimal){{0, 0, 0, 0}})
+
+#define SUCCESS 0
+#define CALCULATION_ERROR 1
+
+int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
+int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
+int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
+int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
 
 int s21_is_less(s21_decimal value_1, s21_decimal value_2);
 int s21_is_less_or_equal(s21_decimal value_1, s21_decimal value_2);

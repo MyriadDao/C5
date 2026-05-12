@@ -21,7 +21,7 @@ $(LIB): $(OBJECTS)
 	ranlib $@
 
 $(SOURCE_DIRS): $(LIB)
-	$(CC) $(CFLAGS) -o $@ $(wildcard $(TEST_DIR)/*.c) $(LIB) $(LIBS)  
+	$(CC) $(CFLAGS) -o $@ $(wildcard $(TEST_DIR)/*.c) $(wildcard $(TEST_DIR)/*/*.c) $(LIB) $(LIBS)  
 
 test: $(LIB) $(SOURCE_DIRS)
 	for test in $(SOURCE_DIRS); do ./$$test; done

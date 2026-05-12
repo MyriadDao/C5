@@ -5,6 +5,6 @@
 
 #include "../s21_decimal.h"
 
-
+TCase* s21_add_test_case();
 
 #endif
