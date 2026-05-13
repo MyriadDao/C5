@@ -49,11 +49,14 @@ int s21_is_equal(s21_decimal value_1, s21_decimal value_2)
 	int ret = 1;
   if (get(&value_1, sign) == get(&value_2, sign)) {
     unidec(&value_1, &value_2);
+
     for (int i = 95; i >= 0 && ret; i--) {
       if (get_bit(&value_1, i) != get_bit(&value_2, i)) ret = 0;
     }
-  } else
+
+  } else {
     ret = (isnull(value_1) && isnull(value_2)) ? 1 : 0;
+  }
   return ret;
 }
 
