@@ -1,84 +1,92 @@
 #include "s21_decimal.h"
 
-int s21_from_int_to_decimal(int src, s21_decimal* dest)
-{
-	  int code = CALCULATION_ERROR;
-  if (dest) {
-    code = SUCCESS;
-    *dest = ZERO_DEC;
-    dest->bits[0] = (unsigned)abs(src);
-    get(dest, sign) = src < 0;
+int s21_from_int_to_decimal(int src, s21_decimal *dst) {
+  int res = 1;
+  if (dst) {
+    dst->bits[0] = 0;
+    dst->bits[1] = 0;
+    dst->bits[2] = 0;
+    dst->bits[3] = 0;
+    if (src < 0) {
+      setSign(dst, 1);
+      src *= -1;
+    }
+    dst->bits[0] = src;
+    res = 0;
   }
-  return code;
+  return res;
 }
 
-int s21_from_float_to_decimal(float src, s21_decimal* dest)
-{
-	  int code = CALCULATION_ERROR;
-  if (dest && isfinite(src)) {
-    *dest = ZERO_DEC;
-    code = SUCCESS;
-    if (src != 0) {
-      s21_decimal tmp = ZERO_DEC;
-      binaryfloat *bsrc = (binaryfloat *)&src;
-      get(dest, sign) = get(&tmp, sign) = bsrc->sign;
-
-      int e = bsrc->expo - 127;
-      for (int i = 0; i <= 23 && code == SUCCESS; i++) {
-        if (i == 0 || (bsrc->mantisse & (1 << (23 - i)))) {
-          if (e - i > 95)
-            code = CALCULATION_ERROR;
-          else if (e - i >= 0)
-            set_bit(dest, e - i);
-          else if (e - i >= -96)
-            set_bit(&tmp, 96 + (e - i));
+int s21_from_float_to_decimal(float src, s21_decimal *dst) {
+  int res = 1, exp = getFloatExp(&src);
+  if (dst && src != 0 && !isinf(src)) {
+    dst->bits[0] = 0;
+    dst->bits[1] = 0;
+    dst->bits[2] = 0;
+    dst->bits[3] = 0;
+    int sign = 0;
+    if (src < 0) {
+      src *= -1;
+      sign = 1;
+    }
+    double tmp = (double)src;
+    int scale = 0;
+    while (scale < 28 && (int)tmp / (int)pow(2, 21) == 0) {
+      tmp *= 10;
+      scale++;
+    }
+    // tmp = round(tmp);
+    if (scale <= 28 && (exp > -94 && exp < 96)) {
+      fbits mant;
+      tmp = (float)tmp;
+      for (; fmod(tmp, 10) == 0 && scale > 0; scale--, tmp /= 10) {
+      }
+      mant.fl = tmp;
+      exp = getFloatExp(&mant.fl);
+      setBit(dst, exp, 1);
+      for (int i = exp - 1, j = 22; j >= 0; i--, j--) {
+        if ((mant.ui & (1 << j)) != 0) {
+          setBit(dst, i, 1);
         }
       }
-      while (code == SUCCESS && get(dest, expo) < 28 && !isnull(tmp)) {
-        code += raiseexpo(dest);
-        madd(*dest, (s21_decimal){{mul_by_ten(&tmp), 0, 0, 0}}, dest);
-      }
+      setSign(dst, sign);
+      setScale(dst, scale);
+      res = 0;
     }
   }
-  return code;
+  return res;
 }
 
-int s21_from_decimal_to_int(s21_decimal src, int* dest)
-{
-	  int code = CALCULATION_ERROR;
-  if (dest) {
-    s21_truncate(src, &src);
-    if (src.bits[1] == 0 && src.bits[2] == 0 &&
-        src.bits[0] <= (unsigned)INT_MAX + get(&src, sign)) {
-      code = SUCCESS;
-      *dest = (int)(long int)(src.bits[0]) * (get(&src, sign) ? -1L : 1L);
+int s21_from_decimal_to_int(s21_decimal src, int *dst) {
+  int res = 1;
+  if (src.bits[1] == 0 && src.bits[2] == 0) {
+    *dst = src.bits[0];
+    if (getSign(src)) {
+      *dst *= -1;
     }
+    *dst /= (int)pow(10, getScale(src));
+    res = 0;
   }
-  return code;
+  return res;
 }
 
-int s21_from_decimal_to_float(s21_decimal src, float* dest)
-{
-	  int code = CALCULATION_ERROR;
-  if (dest) {
-    *dest = 0;
-    code = SUCCESS;
-    if (!isnull(src)) {
-      binaryfloat *bdst = (binaryfloat *)dest;
-      bdst->expo = 127 + 95;
-      bdst->sign = get(&src, sign);
-
-      while (bdst->expo >= 127 && !get_bit(&src, bdst->expo - 127)) {
-        bdst->expo--;
-      }
-
-      for (int i = 0; i < 23; i++) {
-        int b = bdst->expo - i - 128;
-        if (b >= 0) bdst->mantisse |= get_bit(&src, b) << (22 - i);
-      }
-
-      *dest /= pow(10, get(&src, expo));
+int s21_from_decimal_to_float(s21_decimal src, float* dst) {
+  int res = 1;
+  if (dst) {
+    double tmp = 0;
+    int exp = 0;
+    for (int i = 0; i < 96; i++) {
+      if ((src.bits[i / 32] & (1 << i % 32)) != 0) tmp += pow(2, i);
     }
+    if ((exp = getScale(src)) > 0) {
+      for (int i = exp; i > 0; i--, tmp /= 10.0)
+        ;
+    }
+    *dst = (float)tmp;
+    if (getSign(src)) {
+      *dst *= -1;
+    }
+    res = 0;
   }
-  return code;
+  return res;
 }

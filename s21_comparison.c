@@ -1,66 +1,62 @@
 #include "s21_decimal.h"
 
-int s21_is_less(s21_decimal value_1, s21_decimal value_2)
-{
-	return s21_is_greater(value_2, value_1);
+int s21_is_less(s21_decimal value_1, s21_decimal value_2) {
+  return s21_is_greater(value_2, value_1);
 }
 
-int s21_is_less_or_equal(s21_decimal value_1, s21_decimal value_2)
-{
-	return (s21_is_less(value_1, value_2) || s21_is_equal(value_1, value_2));
+int s21_is_less_or_equal(s21_decimal value_1, s21_decimal value_2) {
+  return s21_is_less(value_1, value_2) || s21_is_equal(value_1, value_2);
 }
 
-int s21_is_greater(s21_decimal value_1, s21_decimal value_2)
-{
-	  int ret = 0, flag = 0;
-
-  if (get(&value_1, sign) != get(&value_2, sign)) {
-    if (isnull(value_1) && isnull(value_2))
-      ret = 0;
-    else
-      ret = get(&value_1, sign) == 0 ? 1 : 0;
-  } else {
-    if (get(&value_1, expo) != get(&value_2, expo)) {
-      ret = unidec(&value_1, &value_2);
-      ret = 0;
-    }
-
-    for (int i = 95; i >= 0; i--) {
-      if ((get_bit(&value_1, i) != get_bit(&value_2, i)) && flag == 0) {
-        flag = 1;
-
-        if (get_bit(&value_1, i) > get_bit(&value_2, i))
-          ret = get(&value_1, sign) == 0 ? 1 : 0;
-        else
-          ret = get(&value_1, sign) == 0 ? 0 : 1;
+int s21_is_greater(s21_decimal value_1, s21_decimal value_2) {
+  int res = 0;
+  int sign_a = getSign(value_1), sign_b = getSign(value_2);
+  if (!(isNull(value_1) && isNull(value_2))) {
+    if (sign_a != sign_b) {
+      if (sign_a == 0) {
+        res = 1;
+      } else {
+        res = 0;
+      }
+    } else {
+      alignmentScale(&value_1, &value_2);
+      for (int i = 95; i >= 0; i--) {
+        int bit_a = getBit(value_1, i), bit_b = getBit(value_2, i);
+        if (bit_a != bit_b) {
+          if (bit_a != 0) {
+            res = (sign_a == 0) ? 1 : 0;
+            break;
+          } else {
+            res = (sign_a == 0) ? 0 : 1;
+            break;
+          }
+        }
       }
     }
   }
-  return ret;
+  return res;
 }
 
-int s21_is_greater_or_equal(s21_decimal value_1, s21_decimal value_2)
-{
-	return (s21_is_greater(value_1, value_2) || s21_is_equal(value_1, value_2));
+int s21_is_greater_or_equal(s21_decimal value_1, s21_decimal value_2) {
+  return s21_is_greater(value_1, value_2) || s21_is_equal(value_1, value_2);
 }
 
-int s21_is_equal(s21_decimal value_1, s21_decimal value_2)
-{
-	int ret = 1;
-  if (get(&value_1, sign) == get(&value_2, sign)) {
-    unidec(&value_1, &value_2);
-
-    for (int i = 95; i >= 0 && ret; i--) {
-      if (get_bit(&value_1, i) != get_bit(&value_2, i)) ret = 0;
+int s21_is_equal(s21_decimal value_1, s21_decimal value_2) {
+  int res = 1;
+  if (getSign(value_1) == getSign(value_2)) {
+    alignmentScale(&value_1, &value_2);
+    for (int i = 95; i >= 0; i--) {
+      if (getBit(value_1, i) != getBit(value_2, i)) {
+        res = 0;
+        break;
+      }
     }
-
-  } else {
-    ret = (isnull(value_1) && isnull(value_2)) ? 1 : 0;
+  } else if (!(isNull(value_1) && isNull(value_2))) {
+    res = 0;
   }
-  return ret;
+  return res;
 }
 
-int s21_is_not_equal(s21_decimal value_1, s21_decimal value_2)
-{
-	return !s21_is_equal(value_1, value_2);
+int s21_is_not_equal(s21_decimal value_1, s21_decimal value_2) {
+  return !s21_is_equal(value_1, value_2);
 }
