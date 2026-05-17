@@ -23,6 +23,8 @@ TCase* s21_is_greater_or_equal_test_case();
 TCase* s21_is_less_test_case();
 TCase* s21_is_less_or_equal_test_case();
 
+TCase* s21_from_int_to_decimal_test_case();
+
 //TCase* s21_floor_test_case();
 
 #endif
