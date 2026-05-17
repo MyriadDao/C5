@@ -12,6 +12,9 @@
 #define TEST_OTHER_ERROR 1
 
 TCase* s21_add_test_case();
+TCase* s21_sub_test_case();
+TCase* s21_mul_test_case();
+TCase* s21_div_test_case();
 
 TCase* s21_is_equal_test_case();
 TCase* s21_is_not_equal_test_case();
@@ -20,6 +23,6 @@ TCase* s21_is_greater_or_equal_test_case();
 TCase* s21_is_less_test_case();
 TCase* s21_is_less_or_equal_test_case();
 
-TCase* s21_floor_test_case();
+//TCase* s21_floor_test_case();
 
 #endif

@@ -22,4 +22,14 @@ int isNull(s21_decimal value);
 int getFloatExp(float *value);
 s21_decimal *leftShift(s21_decimal *value, int shift);
 
+int s21_is_correct_decimal(s21_decimal decimal);
+
+int s21_decimal_get_empty1(s21_decimal decimal);
+int s21_decimal_get_empty2(s21_decimal decimal);
+
+s21_decimal s21_decimal_get_inf();
+
+int s21_decimal_get_power(s21_decimal decimal);
+int s21_decimal_get_sign(s21_decimal decimal);
+
 #endif

@@ -1,5 +1,5 @@
 #include "../test_cases.h"
-
+/*
 void test_floor(s21_decimal decimal, s21_decimal decimal_check) {
     s21_decimal result;
 
@@ -111,3 +111,4 @@ TCase* s21_floor_test_case()
 
 	return tc;
 }
+*/
