@@ -49,12 +49,13 @@ int getScale(s21_decimal value) {
 s21_decimal *setScale(s21_decimal *value, int scale) {
   if (value && scale >= 0 && scale <= 28) {
     int sign = getSign(*value);
-    value->bits[3] = 0; // Полностью очищаем служебный инт
+    value->bits[3] = 0; // СТРОГО ОБНУЛЯЕМ ВЕСЬ ЧЕТВЕРТЫЙ ИНТ, убирая любой мусор!
     value->bits[3] |= (scale << 16);
     if (sign) setSign(value, 1);
   }
   return value;
 }
+
 
 s21_decimal *increaseScale(s21_decimal *value, int shift) {
   if (!value) return value;
@@ -89,10 +90,10 @@ s21_decimal *decreaseScale(s21_decimal *value, int shift) {
   
   for (int y = 0; y < shift; y += 1) {
     int current_scale = getScale(*value);
-    if (current_scale == 0) break;
+    if (current_scale == 0) break; // КРИТИЧЕСКИ ВАЖНО: Не уменьшаем, если масштаб уже 0!
     
     unsigned long long remainder = 0;
-    // Идем от старшего инта к младшему
+    // Корректный проход по 64-битному окну сверху вниз
     for (int x = 2; x >= 0; x -= 1) {
       unsigned long long current = (remainder << 32) + value->bits[x];
       value->bits[x] = current / 10;
@@ -104,21 +105,48 @@ s21_decimal *decreaseScale(s21_decimal *value, int shift) {
 }
 
 
+
 void alignmentScale(s21_decimal *value_1, s21_decimal *value_2) {
-  if (getScale(*value_1) != getScale(*value_2)) {
-    if (getScale(*value_1) < getScale(*value_2)) {
-      alignmentScale(value_2, value_1);
+  if (!value_1 || !value_2) return;
+  
+  int scale1 = getScale(*value_1);
+  int scale2 = getScale(*value_2);
+  
+  // Если масштабы изначально равны, НИЧЕГО НЕ ДЕЛАЕМ и сразу выходим
+  if (scale1 == scale2) return;
+  
+  // 1. Подтягиваем масштаб value_1 вверх до уровня value_2
+  while (scale1 < scale2) {
+    s21_decimal check = *value_1;
+    increaseScale(&check, 1);
+    
+    // Проверяем, удалось ли успешно увеличить масштаб без переполнения мантиссы
+    if (getScale(check) > scale1) {
+      *value_1 = check;
+      scale1 = getScale(*value_1);
     } else {
-      int scaleLow = getScale(*value_2), scaleHigh = getScale(*value_1);
-      for (; (scaleHigh - scaleLow) && !getBit(*value_2, 96); scaleLow += 1)
-        increaseScale(value_2, 1);
-      for (; scaleHigh - scaleLow; scaleHigh -= 1) {
-        decreaseScale(value_1, scaleHigh - scaleLow);
-        setScale(value_1, scaleLow);
-      }
+      // Если мантисса value_1 переполняется, единственный выход — уменьшать масштаб value_2
+      decreaseScale(value_2, 1);
+      scale2 = getScale(*value_2);
+    }
+  }
+  
+  // 2. Подтягиваем масштаб value_2 вверх до уровня value_1
+  while (scale2 < scale1) {
+    s21_decimal check = *value_2;
+    increaseScale(&check, 1);
+    
+    if (getScale(check) > scale2) {
+      *value_2 = check;
+      scale2 = getScale(*value_2);
+    } else {
+      // Если мантисса value_2 переполняется, уменьшаем масштаб value_1
+      decreaseScale(value_1, 1);
+      scale1 = getScale(*value_1);
     }
   }
 }
+
 
 int getSign(s21_decimal value) {
   return !!(value.bits[3] & (1u << 31));

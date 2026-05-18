@@ -5,6 +5,7 @@
 #include <math.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "s21_decimal_type.h"
 #include "s21_utils.h"
