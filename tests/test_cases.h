@@ -30,5 +30,7 @@ TCase* s21_from_decimal_to_float_test_case();
 
 TCase* s21_floor_test_case();
 TCase* s21_round_test_case();
+TCase* s21_truncate_test_case();
+TCase* s21_negate_test_case();
 
 #endif

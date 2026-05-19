@@ -13,7 +13,6 @@ START_TEST(test_1) {
 END_TEST
 
 START_TEST(test_2) {
-    // 792281625.14264337593543950335
     s21_decimal decimal = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x140000}};
     int code = s21_from_decimal_to_float(decimal, NULL);
 

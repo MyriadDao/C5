@@ -24,7 +24,6 @@ int getBitLast(s21_decimal value) {
 }
 
 
-//  TODO [addBit] Необходим рефакторинг кода.
 int addBit(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   if (!result) return 1;
   int exp = 0;
@@ -35,11 +34,11 @@ int addBit(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     
     int sum = bit1 + bit2 + exp;
     
-    setBit(result, i, sum % 2); // Записываем текущий бит (0 или 1)
-    exp = sum / 2;             // Перенос в следующий разряд (0 или 1)
+    setBit(result, i, sum % 2); 
+    exp = sum / 2;             
   }
   
-  return exp; // Возвращает 1, если произошло переполнение мантиссы (96-й бит)
+  return exp; 
 }
 
 int getScale(s21_decimal value) {
@@ -49,7 +48,7 @@ int getScale(s21_decimal value) {
 s21_decimal *setScale(s21_decimal *value, int scale) {
   if (value && scale >= 0 && scale <= 28) {
     int sign = getSign(*value);
-    value->bits[3] = 0; // СТРОГО ОБНУЛЯЕМ ВЕСЬ ЧЕТВЕРТЫЙ ИНТ, убирая любой мусор!
+    value->bits[3] = 0; 
     value->bits[3] |= (scale << 16);
     if (sign) setSign(value, 1);
   }
@@ -67,7 +66,6 @@ s21_decimal *increaseScale(s21_decimal *value, int shift) {
     s21_decimal v_x2 = *value;
     s21_decimal v_x8 = *value;
     
-    // x10 = (x << 1) + (x << 3)
     leftShift(&v_x2, 1);
     leftShift(&v_x8, 3);
     
@@ -75,10 +73,9 @@ s21_decimal *increaseScale(s21_decimal *value, int shift) {
     int overflow = addBit(v_x2, v_x8, &res_mantissa);
     
     if (overflow) {
-      break; // Если мантисса переполнилась, увеличивать scale больше нельзя
+      break; 
     }
     
-    // Копируем мантиссу и обновляем scale
     for (int x = 0; x < 3; x++) value->bits[x] = res_mantissa.bits[x];
     setScale(value, current_scale + 1);
   }
@@ -90,10 +87,9 @@ s21_decimal *decreaseScale(s21_decimal *value, int shift) {
   
   for (int y = 0; y < shift; y += 1) {
     int current_scale = getScale(*value);
-    if (current_scale == 0) break; // КРИТИЧЕСКИ ВАЖНО: Не уменьшаем, если масштаб уже 0!
+    if (current_scale == 0) break; 
     
     unsigned long long remainder = 0;
-    // Корректный проход по 64-битному окну сверху вниз
     for (int x = 2; x >= 0; x -= 1) {
       unsigned long long current = (remainder << 32) + value->bits[x];
       value->bits[x] = current / 10;
@@ -112,26 +108,21 @@ void alignmentScale(s21_decimal *value_1, s21_decimal *value_2) {
   int scale1 = getScale(*value_1);
   int scale2 = getScale(*value_2);
   
-  // Если масштабы изначально равны, НИЧЕГО НЕ ДЕЛАЕМ и сразу выходим
   if (scale1 == scale2) return;
   
-  // 1. Подтягиваем масштаб value_1 вверх до уровня value_2
   while (scale1 < scale2) {
     s21_decimal check = *value_1;
     increaseScale(&check, 1);
     
-    // Проверяем, удалось ли успешно увеличить масштаб без переполнения мантиссы
     if (getScale(check) > scale1) {
       *value_1 = check;
       scale1 = getScale(*value_1);
     } else {
-      // Если мантисса value_1 переполняется, единственный выход — уменьшать масштаб value_2
       decreaseScale(value_2, 1);
       scale2 = getScale(*value_2);
     }
   }
   
-  // 2. Подтягиваем масштаб value_2 вверх до уровня value_1
   while (scale2 < scale1) {
     s21_decimal check = *value_2;
     increaseScale(&check, 1);
@@ -140,7 +131,6 @@ void alignmentScale(s21_decimal *value_1, s21_decimal *value_2) {
       *value_2 = check;
       scale2 = getScale(*value_2);
     } else {
-      // Если мантисса value_2 переполняется, уменьшаем масштаб value_1
       decreaseScale(value_1, 1);
       scale1 = getScale(*value_1);
     }
@@ -169,7 +159,7 @@ s21_decimal *convert(s21_decimal *value) {
   addBit(*value, add, &result);
   for (int x = 0; x < 3; x += 1) value->bits[x] = result.bits[x];
   
-  setBit(value, 127, 1); // ИСПРАВЛЕНО: 127-й бит отвечает за знак минус
+  setBit(value, 127, 1); 
   return value;
 }
 

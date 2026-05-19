@@ -2,7 +2,6 @@
 
 
 START_TEST(test_floor_1) {
-    // 792281625.14264337593543950335
     s21_decimal decimal = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x140000}};
 
     int code = s21_floor(decimal, NULL);
@@ -11,9 +10,6 @@ START_TEST(test_floor_1) {
 }
 
 START_TEST(test_floor_2) {
-    // степень 154 (показатель степени должен быть от 0 до 28)
-    // биты 0-15 не нули
-    // биты 24-30 не нули
     s21_decimal decimal = {{0, 0, 0, 1000000000}};
     s21_decimal result;
 
@@ -24,7 +20,6 @@ START_TEST(test_floor_2) {
 END_TEST
 
 START_TEST(test_floor_3) {
-    // степень 29 (показатель степени должен быть от 0 до 28)
     s21_decimal decimal = {{-1, 0, 0, 0x1D0000}};
     s21_decimal result;
 
@@ -35,7 +30,6 @@ START_TEST(test_floor_3) {
 END_TEST
 
 START_TEST(test_floor_4) {
-    // степень 29 (показатель степени должен быть от 0 до 28)
     s21_decimal decimal = {{0, 0, 0, 0x1D0000}};
     s21_decimal result;
 
@@ -46,9 +40,7 @@ START_TEST(test_floor_4) {
 END_TEST
 
 START_TEST(test_floor_5) {
-    // 79228162514264337593543950335
     s21_decimal decimal = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0}};
-    // 79228162514264337593543950335
     s21_decimal check = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0}};
 
     s21_decimal result;
@@ -58,9 +50,7 @@ START_TEST(test_floor_5) {
 }
 
 START_TEST(test_floor_6) {
-    // -79228162514264337593543950335
     s21_decimal decimal = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x80000000}};
-    // -79228162514264337593543950335
     s21_decimal check = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x80000000}};
 
     s21_decimal result;
@@ -70,9 +60,7 @@ START_TEST(test_floor_6) {
 }
 
 START_TEST(test_floor_7) {
-    // 7922816251426433759354395033.5
     s21_decimal decimal = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x10000}};
-    // 7922816251426433759354395033
     s21_decimal check = {{0x99999999, 0x99999999, 0x19999999, 0x0}};
 
     s21_decimal result;
@@ -82,9 +70,7 @@ START_TEST(test_floor_7) {
 }
 
 START_TEST(test_floor_8) {
-    // -7922816251426433759354395033.5
     s21_decimal decimal = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x80010000}};
-    // -7922816251426433759354395034
     s21_decimal check = {{0x9999999A, 0x99999999, 0x19999999, 0x80000000}};
 
     s21_decimal result;

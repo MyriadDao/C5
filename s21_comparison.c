@@ -42,7 +42,6 @@ int s21_is_greater_or_equal(s21_decimal value_1, s21_decimal value_2) {
 }
 
 int s21_is_equal(s21_decimal value_1, s21_decimal value_2) {
-  // 1. Быстрая проверка на полное побитовое совпадение всех 4-х интов
   if (value_1.bits[0] == value_2.bits[0] &&
       value_1.bits[1] == value_2.bits[1] &&
       value_1.bits[2] == value_2.bits[2] &&
@@ -50,22 +49,18 @@ int s21_is_equal(s21_decimal value_1, s21_decimal value_2) {
     return 1; 
   }
 
-  // 2. Особый случай для +0 и -0
   if (isNull(value_1) && isNull(value_2)) {
     return 1;
   }
   
-  // 3. Если знаки разные, они не равны
   if (getSign(value_1) != getSign(value_2)) {
     return 0;
   }
   
-  // 4. Только если масштабы реально разные, запускаем тяжелое выравнивание
   if (getScale(value_1) != getScale(value_2)) {
     alignmentScale(&value_1, &value_2);
   }
   
-  // 5. Финальная проверка мантисс после выравнивания
   return (value_1.bits[0] == value_2.bits[0] &&
           value_1.bits[1] == value_2.bits[1] &&
           value_1.bits[2] == value_2.bits[2] &&

@@ -25,6 +25,8 @@ Suite* decimal_suite()
 
 	suite_add_tcase(suite, s21_floor_test_case());
 	suite_add_tcase(suite, s21_round_test_case());
+	suite_add_tcase(suite, s21_truncate_test_case());
+	suite_add_tcase(suite, s21_negate_test_case());
 //	suite_add_tcase();
 
 	return suite;
