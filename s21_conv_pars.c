@@ -8,13 +8,13 @@ int s21_from_int_to_decimal(int src, s21_decimal *dst) {
   unsigned int abs_src = src;
   
   if (src < 0) {
-    setSign(dst, 1);
+    s21_set_sign(dst, 1);
     abs_src = (unsigned int)(-src); 
   }
   
   dst->bits[0] = abs_src;
   
-  return 0; 
+  return s21_is_correct_decimal(*dst); 
 }
 
 int s21_from_float_to_decimal(float src, s21_decimal *dst) {
@@ -67,10 +67,10 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
   dst->bits[1] = (unsigned int)(mantissa >> 32);
   dst->bits[2] = 0;
   
-  setScale(dst, scale);
-  setSign(dst, sign);
+  s21_set_scale(dst, scale);
+  s21_set_sign(dst, sign);
 
-  return 0;
+  return s21_is_correct_decimal(*dst); 
 }
 
 int s21_from_decimal_to_int(s21_decimal src, int *dst) {
@@ -84,10 +84,10 @@ return 1;
   int res = 1;
   if (src.bits[1] == 0 && src.bits[2] == 0) {
     *dst = src.bits[0];
-    if (getSign(src)) {
+    if (s21_decimal_get_sign(src)) {
       *dst *= -1;
     }
-    *dst /= (int)pow(10, getScale(src));
+    *dst /= (int)pow(10, s21_decimal_get_power(src));
     res = 0;
   }
   return res;
@@ -107,15 +107,16 @@ return 1;
     for (int i = 0; i < 96; i++) {
       if ((src.bits[i / 32] & (1 << i % 32)) != 0) tmp += pow(2, i);
     }
-    if ((exp = getScale(src)) > 0) {
+    if ((exp = s21_decimal_get_power(src)) > 0) {
       for (int i = exp; i > 0; i--, tmp /= 10.0)
         ;
     }
     *dst = (float)tmp;
-    if (getSign(src)) {
+    if (s21_decimal_get_sign(src)) {
       *dst *= -1;
     }
     res = 0;
+
   }
   return res;
-}
+  }

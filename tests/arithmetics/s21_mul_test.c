@@ -117,8 +117,8 @@ START_TEST(test_13) {
   s21_decimal val2 = {{200, 0, 0, 0}};
   s21_decimal res = {{0}};
 
-  setScale(&val2, 1);
-  setScale(&val2, 2);
+  s21_set_scale(&val2, 1);
+  s21_set_scale(&val2, 2);
 
   ck_assert_int_eq(1, s21_mul(val1, val2, &res));
 }
@@ -129,8 +129,8 @@ START_TEST(test_14) {
   s21_decimal val1 = {{20, 0, 0, 0}};
   s21_decimal res = {{0}};
 
-  setScale(&val2, 1);
-  setScale(&val2, 2);
+  s21_set_scale(&val2, 1);
+  s21_set_scale(&val2, 2);
 
   ck_assert_int_eq(1, s21_mul(val1, val2, &res));
 }

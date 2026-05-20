@@ -124,6 +124,36 @@ START_TEST(test_13) {
 }
 END_TEST
 
+START_TEST(test_14) {
+  s21_decimal val1 = {{1, 0, 0, 0}};
+  s21_decimal val2 = {{3, 0, 0, 0}};
+  s21_decimal res = {{0}};
+
+  ck_assert_int_eq(0, s21_div(val1, val2, &res));
+}
+END_TEST
+
+START_TEST(test_15) {
+  s21_decimal val1 = {{10, 0, 0, 0}};
+  s21_decimal val2 = {{1, 0, 0, 0}};
+  s21_decimal res = {{0}};
+
+  s21_set_scale(&val2, 1);
+
+  ck_assert_int_eq(0, s21_div(val1, val2, &res));
+}
+END_TEST
+
+START_TEST(test_16) {
+  s21_decimal val1 = {{1, 0, 0, 0}};
+  s21_decimal val2 = {{3, 0, 0, 0}};
+  s21_decimal res = {{0}};
+
+  s21_set_scale(&val1, 28);
+
+  ck_assert_int_eq(0, s21_div(val1, val2, &res));
+}
+END_TEST
 
 TCase* s21_div_test_case()
 {
@@ -143,6 +173,9 @@ TCase* s21_div_test_case()
 	tcase_add_test(tc, test_11);
 	tcase_add_test(tc, test_12);
 	tcase_add_test(tc, test_13);
+	tcase_add_test(tc, test_14);
+	tcase_add_test(tc, test_15);
+	tcase_add_test(tc, test_16);
 
 	return tc;
 }

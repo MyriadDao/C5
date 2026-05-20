@@ -169,11 +169,11 @@ START_TEST(test_17) {
   s21_decimal val1 = {{UINT_MAX, UINT_MAX, UINT_MAX, ~(UINT_MAX / 2)}};
   s21_decimal val2 = {{UINT_MAX, UINT_MAX, UINT_MAX, ~(UINT_MAX / 2)}};
 
-  setScale(&val1, 5);
-  setScale(&val2, 3);
+  s21_set_scale(&val1, 5);
+  s21_set_scale(&val2, 3);
 
   s21_decimal res;
-  ck_assert_int_eq(0, s21_add(val1, val2, &res));
+  ck_assert_int_eq(2, s21_add(val1, val2, &res));
 }
 END_TEST
 
@@ -239,6 +239,7 @@ TCase* s21_add_test_case()
 	tcase_add_test(tc, test_14);
 	tcase_add_test(tc, test_15);
 	tcase_add_test(tc, test_16);
+	tcase_add_test(tc, test_17);
 	tcase_add_test(tc, test_18);
 	
 	tcase_add_test(tc, test_19);

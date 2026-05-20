@@ -97,7 +97,7 @@ START_TEST(test_8) {
 END_TEST
 
 START_TEST(test_9) {
-  float src = 1e30f;
+  float src = 1e15f;
 
   s21_decimal result = {0};
 

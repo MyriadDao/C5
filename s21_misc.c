@@ -32,7 +32,7 @@ int s21_round(s21_decimal value, s21_decimal* result) {
   if (!result) return 1;
   else if (!s21_is_correct_decimal(value)) return 1;
   if (!s21_truncate(value, result) && !s21_is_equal(value, *result)) {
-    if (getSign(value))
+    if (s21_decimal_get_sign(value))
       s21_sub(value, ((s21_decimal){{5, 0, 0, 65536}}), &value);
     else
       s21_add(value, ((s21_decimal){{5, 0, 0, 65536}}), &value);
@@ -96,14 +96,4 @@ int s21_negate(s21_decimal value, s21_decimal* result) {
   }
 
   return 0;
-}
-
-s21_decimal* s21_copy(s21_decimal* dest, s21_decimal src) {
-  for (int x = 0; x < 4; x += 1) dest->bits[x] = src.bits[x];
-  return dest;
-}
-
-s21_decimal* s21_reset(s21_decimal* value) {
-  for (int x = 0; x < 4; x += 1) value->bits[x] = 0;
-  return value;
 }

@@ -1,11 +1,11 @@
 #include "s21_decimal.h"
 
-int getBit(s21_decimal value, int bit) {
+int s21_get_bit(s21_decimal value, int bit) {
   if (bit < 0 || bit > 127) return 0;
   return !!(value.bits[bit / 32] & (1u << (bit % 32)));
 }
 
-s21_decimal *setBit(s21_decimal *value, int pos, int bit) {
+s21_decimal *s21_set_bit(s21_decimal *value, int pos, int bit) {
   if (value && pos >= 0 && pos <= 127) {
     if (bit)
       value->bits[pos / 32] |= (1u << (pos % 32));
@@ -15,78 +15,66 @@ s21_decimal *setBit(s21_decimal *value, int pos, int bit) {
   return value;
 }
 
-int getBitLast(s21_decimal value) {
-  int bitLast = 95;
-  for (; (bitLast >= 0) && (!getBit(value, bitLast));) {
-    bitLast -= 1;
-  }
-  return bitLast;
-}
-
-
-int addBit(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+int s21_add_bit(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   if (!result) return 1;
   int exp = 0;
   
   for (int i = 0; i < 96; i += 1) {
-    int bit1 = getBit(value_1, i);
-    int bit2 = getBit(value_2, i);
+    int bit1 = s21_get_bit(value_1, i);
+    int bit2 = s21_get_bit(value_2, i);
     
     int sum = bit1 + bit2 + exp;
     
-    setBit(result, i, sum % 2); 
+    s21_set_bit(result, i, sum % 2); 
     exp = sum / 2;             
   }
   
   return exp; 
 }
 
-int getScale(s21_decimal value) {
-  return (value.bits[3] >> 16) & 0xFF;
-}
 
-s21_decimal *setScale(s21_decimal *value, int scale) {
+s21_decimal *s21_set_scale(s21_decimal *value, int scale) {
   if (value && scale >= 0 && scale <= 28) {
-    int sign = getSign(*value);
+    int sign = s21_decimal_get_sign(*value);
     value->bits[3] = 0; 
     value->bits[3] |= (scale << 16);
-    if (sign) setSign(value, 1);
+    if (sign) s21_set_sign(value, 1);
   }
   return value;
 }
 
 
-s21_decimal *increaseScale(s21_decimal *value, int shift) {
+s21_decimal *s21_increase_scale(s21_decimal *value, int shift) {
   if (!value) return value;
   
   for (int i = 0; i < shift; i++) {
-    int current_scale = getScale(*value);
+    int current_scale = s21_decimal_get_power(*value);
     if (current_scale >= 28) break;
 
     s21_decimal v_x2 = *value;
     s21_decimal v_x8 = *value;
     
-    leftShift(&v_x2, 1);
-    leftShift(&v_x8, 3);
+    s21_left_shift(&v_x2, 1);
+    s21_left_shift(&v_x8, 3);
     
     s21_decimal res_mantissa = {{0, 0, 0, 0}};
-    int overflow = addBit(v_x2, v_x8, &res_mantissa);
+    int overflow = s21_add_bit(v_x2, v_x8, &res_mantissa);
     
     if (overflow) {
       break; 
     }
     
     for (int x = 0; x < 3; x++) value->bits[x] = res_mantissa.bits[x];
-    setScale(value, current_scale + 1);
+    s21_set_scale(value, current_scale + 1);
   }
   return value;
 }
 
-s21_decimal *decreaseScale(s21_decimal *value, int shift) {
+s21_decimal *s21_decrease_scale(s21_decimal *value, int shift) {
   if (!value) return value;
   
   for (int y = 0; y < shift; y += 1) {
-    int current_scale = getScale(*value);
+    int current_scale = s21_decimal_get_power(*value);
     if (current_scale == 0) break; 
     
     unsigned long long remainder = 0;
@@ -95,54 +83,49 @@ s21_decimal *decreaseScale(s21_decimal *value, int shift) {
       value->bits[x] = current / 10;
       remainder = current % 10;
     }
-    setScale(value, current_scale - 1);
+    s21_set_scale(value, current_scale - 1);
   }
   return value;
 }
 
 
 
-void alignmentScale(s21_decimal *value_1, s21_decimal *value_2) {
+void s21_alignment_scale(s21_decimal *value_1, s21_decimal *value_2) {
   if (!value_1 || !value_2) return;
   
-  int scale1 = getScale(*value_1);
-  int scale2 = getScale(*value_2);
+  int scale1 = s21_decimal_get_power(*value_1);
+  int scale2 = s21_decimal_get_power(*value_2);
   
   if (scale1 == scale2) return;
   
   while (scale1 < scale2) {
     s21_decimal check = *value_1;
-    increaseScale(&check, 1);
+    s21_increase_scale(&check, 1);
     
-    if (getScale(check) > scale1) {
+    if (s21_decimal_get_power(check) > scale1) {
       *value_1 = check;
-      scale1 = getScale(*value_1);
+      scale1 = s21_decimal_get_power(*value_1);
     } else {
-      decreaseScale(value_2, 1);
-      scale2 = getScale(*value_2);
+      s21_decrease_scale(value_2, 1);
+      scale2 = s21_decimal_get_power(*value_2);
     }
   }
   
   while (scale2 < scale1) {
     s21_decimal check = *value_2;
-    increaseScale(&check, 1);
+    s21_increase_scale(&check, 1);
     
-    if (getScale(check) > scale2) {
+    if (s21_decimal_get_power(check) > scale2) {
       *value_2 = check;
-      scale2 = getScale(*value_2);
+      scale2 = s21_decimal_get_power(*value_2);
     } else {
-      decreaseScale(value_1, 1);
-      scale1 = getScale(*value_1);
+      s21_decrease_scale(value_1, 1);
+      scale1 = s21_decimal_get_power(*value_1);
     }
   }
 }
 
-
-int getSign(s21_decimal value) {
-  return !!(value.bits[3] & (1u << 31));
-}
-
-s21_decimal *setSign(s21_decimal *value, int bit) {
+s21_decimal *s21_set_sign(s21_decimal *value, int bit) {
   if (value) {
     if (bit) value->bits[3] |= (1u << 31);
     else value->bits[3] &= ~(1u << 31);
@@ -150,29 +133,11 @@ s21_decimal *setSign(s21_decimal *value, int bit) {
   return value;
 }
 
-s21_decimal *convert(s21_decimal *value) {
-  if (!value) return value;
-  s21_decimal result = {{0, 0, 0, 0}};
-  s21_decimal add = {{1, 0, 0, 0}};
-  
-  for (int x = 0; x < 3; x += 1) value->bits[x] = ~value->bits[x];
-  addBit(*value, add, &result);
-  for (int x = 0; x < 3; x += 1) value->bits[x] = result.bits[x];
-  
-  setBit(value, 127, 1); 
-  return value;
-}
-
-int isNull(s21_decimal value) {
+int s21_is_null(s21_decimal value) {
   return !value.bits[0] && !value.bits[1] && !value.bits[2];
 }
 
-int getFloatExp(float *value) {
-  if (!value) return 0;
-  unsigned int bits = *((unsigned int *)value);
-  return ((bits & 0x7F800000) >> 23) - 127;
-}
-s21_decimal *leftShift(s21_decimal *value, int shift) {
+s21_decimal *s21_left_shift(s21_decimal *value, int shift) {
   if (!value) return value;
   
   for (int y = 0; y < shift; y += 1) {
@@ -217,12 +182,6 @@ int s21_decimal_get_empty2(s21_decimal decimal) {
     bits3.i = decimal.bits[3];
 
     return bits3.parts.empty2;
-}
-
-s21_decimal s21_decimal_get_inf(void) {
-    s21_decimal result = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF}};
-
-    return result;
 }
 
 int s21_decimal_get_power(s21_decimal decimal) {

@@ -163,6 +163,39 @@ START_TEST(test_14) {
 }
 END_TEST
 
+START_TEST(test_15) {
+    s21_decimal decimal = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x140000}};
+    int code = s21_from_decimal_to_int(decimal, NULL);
+
+    ck_assert_int_eq(code, 1);
+}
+
+START_TEST(test_16) {
+    s21_decimal decimal = {{0, 0, 0, 1000000000}};
+    int result;
+    int code = s21_from_decimal_to_int(decimal, &result);
+
+    ck_assert_int_eq(code, 1);
+}
+END_TEST
+
+START_TEST(test_17) {
+    s21_decimal decimal = {{0, 0, 0, 0x1D0000}};
+    int result;
+    int code = s21_from_decimal_to_int(decimal, &result);
+
+    ck_assert_int_eq(code, 1);
+}
+END_TEST
+
+START_TEST(test_18) {
+    s21_decimal decimal = {{-1, 0, 0, 0x1C0001}};
+    int result;
+    int code = s21_from_decimal_to_int(decimal, &result);
+
+    ck_assert_int_eq(code, 1);
+}
+END_TEST
 
 TCase* s21_from_decimal_to_int_test_case()
 {
@@ -184,6 +217,10 @@ TCase* s21_from_decimal_to_int_test_case()
 	tcase_add_test(tc, test_12);
 	tcase_add_test(tc, test_13);
 	tcase_add_test(tc, test_14);
+	tcase_add_test(tc, test_15);
+	tcase_add_test(tc, test_16);
+	tcase_add_test(tc, test_17);
+	tcase_add_test(tc, test_18);
 
 	return tc;
 }
