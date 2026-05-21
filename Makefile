@@ -1,7 +1,7 @@
 CC=gcc
 
-#CFLAGS=-Wall -Werror -Wextra -std=c11
-CFLAGS=
+CFLAGS=-Wall -Werror -Wextra -std=c11
+#CFLAGS=
 LIBS=-lcheck -lm -lsubunit 
 
 SOURCE_DIRS=decimal
